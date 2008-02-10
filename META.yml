@@ -1,0 +1,25 @@
+---
+name: POE-Component-IRC-Plugin-YouAreDoingItWrong
+version: 0.01
+author:
+  - 'Zoffix Znet <zoffix@cpan.org>'
+abstract: |-
+  show people what they
+  are doing wrong by giving links to http://doingitwrong.com images.
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
+requires:
+  POE: 0.9999
+  POE::Component::IRC::Plugin: 0.09
+  POE::Component::WWW::DoingItWrongCom::RandImage: 0.01
+build_requires:
+  Test::More: 0
+provides:
+  POE::Component::IRC::Plugin::YouAreDoingItWrong:
+    file: lib/POE/Component/IRC/Plugin/YouAreDoingItWrong.pm
+    version: 0.01
+generated_by: Module::Build version 0.2808
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
