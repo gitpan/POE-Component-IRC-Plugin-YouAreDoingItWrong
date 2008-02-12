@@ -3,7 +3,7 @@ package POE::Component::IRC::Plugin::YouAreDoingItWrong;
 use warnings;
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use POE qw(Component::WWW::DoingItWrongCom::RandImage);
 use POE::Component::IRC::Plugin qw(:ALL);
@@ -110,6 +110,8 @@ sub S_public {
             _nick_to_address => $nick_to_address,
         }
     );
+
+    return $self->{eat} ? PCI_EAT_ALL : PCI_EAT_NONE;
 }
 
 sub _get_pic {
@@ -298,7 +300,7 @@ debug information. B<Defaults to:> C<0> (no debug info is printed out)
 
     ->new( eat => 0 );
 
-If set to a true value plugin will return a C<PCI_EAT_NONE> after
+If set to a false value plugin will return a C<PCI_EAT_NONE> after
 responding. If eat is set to a true value, plugin will return a
 C<PCI_EAT_ALL> after responding. See L<POE::Component::IRC::Plugin>
 documentation for more information if you are interested. B<Defaults to:>

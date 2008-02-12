@@ -1,6 +1,6 @@
 ---
 name: POE-Component-IRC-Plugin-YouAreDoingItWrong
-version: 0.01
+version: 0.02
 author:
   - 'Zoffix Znet <zoffix@cpan.org>'
 abstract: |-
@@ -18,7 +18,7 @@ build_requires:
 provides:
   POE::Component::IRC::Plugin::YouAreDoingItWrong:
     file: lib/POE/Component/IRC/Plugin/YouAreDoingItWrong.pm
-    version: 0.01
+    version: 0.02
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
