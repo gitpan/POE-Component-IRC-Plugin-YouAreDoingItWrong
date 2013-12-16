@@ -3,12 +3,12 @@
 use strict;
 use warnings;
 
-use lib '../lib';
+use lib qw(lib ../lib);
 use POE qw(Component::IRC Component::IRC::Plugin::YouAreDoingItWrong);
 
 my @Channels = ( '#zofbot' );
 
-my $irc = POE::Component::IRC->spawn( 
+my $irc = POE::Component::IRC->spawn(
         nick    => 'WrongBot',
         server  => 'irc.freenode.net',
         port    => 6667,
@@ -44,14 +44,14 @@ sub irc_you_are_doing_it_wrong_response {
 
 sub _start {
     $irc->yield( register => 'all' );
-    
+
     # register our plugin
     $irc->plugin_add(
         'Wrong' => POE::Component::IRC::Plugin::YouAreDoingItWrong->new(
             debug => 1,
         )
     );
-    
+
     $irc->yield( connect => { } );
     undef;
 }
@@ -67,7 +67,7 @@ sub irc_001 {
 
 sub _default {
     my ($event, $args) = @_[ARG0 .. $#_];
-        
+
     my @output = ( "$event: " );
 
     foreach my $arg ( @$args ) {

@@ -14,9 +14,13 @@ my $builder = Module::Build->new(
         'POE'                                             => 0.9999,
         'POE::Component::WWW::DoingItWrongCom::RandImage' => 0.01,
         'POE::Component::IRC::Plugin'                     => 0.09,
+        'perl' => '5.006',
     },
+    configure_requires => { 'Module::Build' => 0 },
     add_to_cleanup      => [ 'POE-Component-IRC-Plugin-YouAreDoingItWrong-*' ],
     create_makefile_pl => 'traditional',
 );
-
+if ( $ENV{RELEASE_TESTING} ) {
+    system('pod2text lib/POE/Component/IRC/Plugin/YouAreDoingItWrong.pm > README');
+}
 $builder->create_build_script();

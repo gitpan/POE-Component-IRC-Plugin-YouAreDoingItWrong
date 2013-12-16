@@ -1,40 +1,230 @@
-POE-Component-IRC-Plugin-YouAreDoingItWrong
+NAME
+    POE::Component::IRC::Plugin::YouAreDoingItWrong - show people what they
+    are doing wrong by giving links to http://doingitwrong.com images.
 
-INSTALLATION
+SYNOPSIS
+        use strict;
+        use warnings;
 
-To install this module, run the following commands:
+        use POE qw(Component::IRC Component::IRC::Plugin::YouAreDoingItWrong);
 
-	perl Build.PL
-	./Build
-	./Build test
-	./Build install
+        my $irc = POE::Component::IRC->spawn(
+                nick    => 'WrongBot',
+                server  => 'irc.freenode.net',
+                port    => 6667,
+                ircname => 'You Are Doing It Wrong Bot',
+        ) or die "Oh noes :( $!";
 
-SUPPORT AND DOCUMENTATION
+        POE::Session->create(
+            package_states => [
+                main => [ qw( _start  irc_001 ) ],
+            ],
+        );
 
-After installing, you can find documentation for this module with the
-perldoc command.
+        $poe_kernel->run();
 
-    perldoc POE::Component::IRC::Plugin::YouAreDoingItWrong
+        sub _start {
+            $irc->yield( register => 'all' );
 
-You can also look for information at:
+            # register our plugin
+            $irc->plugin_add(
+                'Wrong' => POE::Component::IRC::Plugin::YouAreDoingItWrong->new
+            );
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Component-IRC-Plugin-YouAreDoingItWrong
+            $irc->yield( connect => { } );
+            undef;
+        }
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/POE-Component-IRC-Plugin-YouAreDoingItWrong
+        sub irc_001 {
+            my ( $kernel, $sender ) = @_[ KERNEL, SENDER ];
+            $kernel->post( $sender => join => '#zofbot' );
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/POE-Component-IRC-Plugin-YouAreDoingItWrong
+            undef;
+        }
 
-    Search CPAN
-        http://search.cpan.org/dist/POE-Component-IRC-Plugin-YouAreDoingItWrong
+        --
 
+        [13:00:27] <Zoffix> WrongBot, doing it wrong Zoffix
+        [13:00:27] <WrongBot> Zoffix, you are doing it wrong: http://www.doingitwrong.com/wrong/20070527-113353.jpg
+        [13:00:41] <Zoffix> WrongBot, doing it wrong
+        [13:00:42] <WrongBot> You are doing it wrong: http://www.doingitwrong.com/wrong/1487_kolo.jpg
 
-COPYRIGHT AND LICENCE
+DESCRIPTION
+    The module is a POE::Component::IRC plugin which, when triggered,
+    fetches links to images from <http://doingitwrong.com> and posts them
+    into the channel, optionally addressing a specific person.
 
-Copyright (C) 2008 Zoffix Znet
+CONSTRUCTOR
+  new
+        $irc->plugin_add(
+            'Wrong' => POE::Component::IRC::Plugin::YouAreDoingItWrong->new
+        );
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+        $irc->plugin_add(
+            'Wrong' => POE::Component::IRC::Plugin::YouAreDoingItWrong->new(
+                auto           => 0,                 # do not auto respond
+                trigger        => qr/^wrong/i,       # trigger
+                banned         => [ qr/aol\.com$/ ], # ignore AOL users
+                response_event => 'diw_event',       # event to send response to
+                debug          => 1,                 # enable some debug output
+            )
+        );
+
+    Returns a POE::Component::IRC::Plugin object suitable to be fed to
+    POE::Component::IRC "plugin_add()" method. Takes a few arguments, *all
+    of which are optional*. The arguments may be as follows:
+
+   auto
+        ->new( auto => 1 );
+
+    Optional. The "auto" argument specifies whether or not the plugin should
+    auto respond with "privmsg" to the channel when triggered. If "auto" is
+    set to a true value the plugin will automatically respond when
+    triggered, when "auto" is set to a false value the plugin will not send
+    any messages to the server and you'll have to listen to the event emited
+    by the plugin (see below). In other words, if you are unhappy with the
+    default behaviour you may turn "auto" off (by setting it to a false
+    value) and set up a handler on the plugin event to do exactly what you
+    want. Defaults to: 1
+
+   trigger
+        ->new( trigger => qr/^doing it wrong/i );
+
+    Optional. Takes a regex as an argument which specifies the trigger for
+    the plugin. Defaults to: "qr/^doing it wrong/i" Note: plugin responds to
+    *addressed* messages, In other words, if you set the trigger to
+    "qr/^diw/i" and your bot's nick name is "WrongBot" the plugin will be
+    triggered by saying "WrongBot, diw". Note 2: if after removing bot's
+    nickname and the trigger the left over will match "m/(\S+)\s*$/" the
+    capture will be prepended to the output, this is so you could address a
+    specific person:
+
+        [13:00:27] <Zoffix> WrongBot, doing it wrong Zoffix
+        [13:00:27] <WrongBot> Zoffix, you are doing it wrong: http://www.doingitwrong.com/wrong/20070527-113353.jpg
+        [13:00:41] <Zoffix> WrongBot, doing it wrong
+        [13:00:42] <WrongBot> You are doing it wrong: http://www.doingitwrong.com/wrong/1487_kolo.jpg
+
+   banned
+        ->new( banned => [ qr/aol\.com$/ ] );
+
+    Optional. Takes an arrayref of regexes as an argument. If the user mask
+    of the person who triggered the plugin matches any of the regexes in the
+    "banned" arrayref the plugin will ignore that person. Defaults to: "[]"
+    (no bans are set)
+
+   response_event
+        ->new( response_event => 'diw_event' );
+
+    Optional. Specifies the name of the event to emit when plugin is
+    triggered. See EMITED EVENTS section for details. Defaults to:
+    "irc_you_are_doing_it_wrong_response"
+
+   debug
+        ->new( debug => 1 );
+
+    Optional. When set to a true value plugin will print out a bit of debug
+    information. Defaults to: 0 (no debug info is printed out)
+
+   eat
+        ->new( eat => 0 );
+
+    If set to a false value plugin will return a "PCI_EAT_NONE" after
+    responding. If eat is set to a true value, plugin will return a
+    "PCI_EAT_ALL" after responding. See POE::Component::IRC::Plugin
+    documentation for more information if you are interested. Defaults to: 1
+
+EMITED EVENTS
+  response_event
+        $VAR1 = {
+            'what' => 'WrongBot, doing it wrong',
+            'who' => 'Zoffix!n=Zoffix@unaffiliated/zoffix',
+            'channel' => '#zofbot',
+            'nick_to_address' => undef,
+            'error' => undef,
+            'pic' => bless( do{\(my $o = 'http://www.doingitwrong.com/wrong/20070929-012129.jpg')}, 'URI::http' )
+        };
+
+    The event handler set up to handle the event, name of which you can
+    specify in the "response_event" of the construcor (it defaults to
+    "irc_you_are_doing_it_wrong_response") will recieve input from the
+    plugin every time it's triggered. The input will come in the form of a
+    hashref in "ARG0". The keys of that hashref are as follows:
+
+   what
+        { 'what' => 'WrongBot, doing it wrong' }
+
+    The "what" key will contain the message which triggered the plugin.
+
+   who
+        { 'who' => 'Zoffix!n=Zoffix@unaffiliated/zoffix' }
+
+    The "who" key will contain the mask of the user who triggered the
+    plugin.
+
+   nick_to_address
+        { 'nick_to_address' => undef }
+
+    The "nick_to_address" key will contain the nick of the person to address
+    if the plugin was triggered in the "address someone" mode (see
+    description of the "trigger" argument to the contructor) or "undef" if
+    plugin was triggered in normal mode.
+
+   error
+        { error => undef }
+
+    If an error occured during while fetching the link to a random image on
+    <http://doingitwrong.com> the "error" key will contain the error
+    message, otherwise it will be "undef".
+
+   pic
+        { 'pic' => bless( do{\(my $o = 'http://www.doingitwrong.com/wrong/20070929-012129.jpg')}, 'URI::http' ) }
+
+    If no errors occured (see "error" above), the "pic" key will contain a
+    URI object pointing to one of the images on
+    <http://www.doingitwrong.com>.
+
+AUTHOR
+    Zoffix Znet, "<zoffix at cpan.org>" (<http://zoffix.com>,
+    <http://haslayout.net>)
+
+BUGS
+    Please report any bugs or feature requests to
+    "bug-poe-component-irc-plugin-youaredoingitwrong at rt.cpan.org", or
+    through the web interface at
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE-Component-IRC-Plugin
+    -YouAreDoingItWrong>. I will be notified, and then you'll automatically
+    be notified of progress on your bug as I make changes.
+
+SUPPORT
+    You can find documentation for this module with the perldoc command.
+
+        perldoc POE::Component::IRC::Plugin::YouAreDoingItWrong
+
+    You can also look for information at:
+
+    *   RT: CPAN's request tracker
+
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Component-IRC-Plugin-Y
+        ouAreDoingItWrong>
+
+    *   AnnoCPAN: Annotated CPAN documentation
+
+        <http://annocpan.org/dist/POE-Component-IRC-Plugin-YouAreDoingItWron
+        g>
+
+    *   CPAN Ratings
+
+        <http://cpanratings.perl.org/d/POE-Component-IRC-Plugin-YouAreDoingI
+        tWrong>
+
+    *   Search CPAN
+
+        <http://search.cpan.org/dist/POE-Component-IRC-Plugin-YouAreDoingItW
+        rong>
+
+COPYRIGHT & LICENSE
+    Copyright 2008 Zoffix Znet, all rights reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
 

@@ -1,25 +1,27 @@
 ---
-name: POE-Component-IRC-Plugin-YouAreDoingItWrong
-version: 0.02
+abstract: 'show people what they'
 author:
   - 'Zoffix Znet <zoffix@cpan.org>'
-abstract: |-
-  show people what they
-  are doing wrong by giving links to http://doingitwrong.com images.
+build_requires:
+  Test::More: 0
+configure_requires:
+  Module::Build: 0
+dynamic_config: 1
+generated_by: 'Module::Build version 0.4007, CPAN::Meta::Converter version 2.132830'
 license: perl
-resources:
-  license: http://dev.perl.org/licenses/
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: POE-Component-IRC-Plugin-YouAreDoingItWrong
+provides:
+  POE::Component::IRC::Plugin::YouAreDoingItWrong:
+    file: lib/POE/Component/IRC/Plugin/YouAreDoingItWrong.pm
+    version: 0.03
 requires:
   POE: 0.9999
   POE::Component::IRC::Plugin: 0.09
   POE::Component::WWW::DoingItWrongCom::RandImage: 0.01
-build_requires:
-  Test::More: 0
-provides:
-  POE::Component::IRC::Plugin::YouAreDoingItWrong:
-    file: lib/POE/Component/IRC/Plugin/YouAreDoingItWrong.pm
-    version: 0.02
-generated_by: Module::Build version 0.2808
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.2.html
-  version: 1.2
+  perl: 5.006
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.03

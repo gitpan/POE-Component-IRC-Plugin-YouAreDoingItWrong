@@ -2,11 +2,13 @@ Build.PL
 Changes
 MANIFEST
 README
+LICENSE
 lib/POE/Component/IRC/Plugin/YouAreDoingItWrong.pm
 examples/wrong_bot.pl
-t/kwalitee.t
 t/00-load.t
-t/pod-coverage.t
-t/pod.t
+xt/kwalitee.t
+xt/pod-coverage.t
+xt/pod.t
 Makefile.PL
 META.yml
+META.json

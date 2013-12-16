@@ -3,7 +3,7 @@ package POE::Component::IRC::Plugin::YouAreDoingItWrong;
 use warnings;
 use strict;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use POE qw(Component::WWW::DoingItWrongCom::RandImage);
 use POE::Component::IRC::Plugin qw(:ALL);
@@ -31,7 +31,7 @@ sub _start {
     my ( $kernel, $self ) = @_[ KERNEL, OBJECT ];
     $self->{_session_id} = $_[SESSION]->ID();
     $kernel->refcount_increment( $self->{_session_id}, __PACKAGE__ );
-    
+
     $self->{poco} = POE::Component::WWW::DoingItWrongCom::RandImage->spawn(
         debug => $self->{debug},
     );
@@ -41,11 +41,11 @@ sub _start {
 
 sub PCI_register {
     my ( $self, $irc ) = splice @_, 0, 2;
-    
+
     $self->{irc} = $irc;
-    
+
     $irc->plugin_register( $self, 'SERVER', qw(public) );
-    
+
     $self->{_session_id} = POE::Session->create(
         object_states => [
             $self => [
@@ -72,12 +72,12 @@ sub _shutdown {
 
 sub PCI_unregister {
     my $self = shift;
-    
+
     # Plugin is dying make sure our POE session does as well.
     $poe_kernel->call( $self->{_session_id} => '_shutdown' );
-    
+
     delete $self->{irc};
-    
+
     return 1;
 }
 
@@ -131,8 +131,8 @@ sub _pic {
     else {
         $message = "You are doing it wrong: $result->{out}";
     }
-    
-    $self->{irc}->_send_event(
+
+    $self->{irc}->send_event(
         $self->{response_event} => {
             pic   => $result->{out},
             error => $result->{error},
@@ -158,6 +158,8 @@ sub _pic {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 POE::Component::IRC::Plugin::YouAreDoingItWrong - show people what they
@@ -170,7 +172,7 @@ are doing wrong by giving links to http://doingitwrong.com images.
 
     use POE qw(Component::IRC Component::IRC::Plugin::YouAreDoingItWrong);
 
-    my $irc = POE::Component::IRC->spawn( 
+    my $irc = POE::Component::IRC->spawn(
             nick    => 'WrongBot',
             server  => 'irc.freenode.net',
             port    => 6667,
@@ -187,7 +189,7 @@ are doing wrong by giving links to http://doingitwrong.com images.
 
     sub _start {
         $irc->yield( register => 'all' );
-        
+
         # register our plugin
         $irc->plugin_add(
             'Wrong' => POE::Component::IRC::Plugin::YouAreDoingItWrong->new
@@ -206,7 +208,7 @@ are doing wrong by giving links to http://doingitwrong.com images.
 
     --
 
-    [13:00:27] <Zoffix> WrongBot, doing it wrong Zoffix 
+    [13:00:27] <Zoffix> WrongBot, doing it wrong Zoffix
     [13:00:27] <WrongBot> Zoffix, you are doing it wrong: http://www.doingitwrong.com/wrong/20070527-113353.jpg
     [13:00:41] <Zoffix> WrongBot, doing it wrong
     [13:00:42] <WrongBot> You are doing it wrong: http://www.doingitwrong.com/wrong/1487_kolo.jpg
@@ -267,7 +269,7 @@ C<WrongBot, diw>. B<Note 2:> if after removing bot's nickname and the
 trigger the left over will match C<m/(\S+)\s*$/> the capture will be
 prepended to the output, this is so you could address a specific person:
 
-    [13:00:27] <Zoffix> WrongBot, doing it wrong Zoffix 
+    [13:00:27] <Zoffix> WrongBot, doing it wrong Zoffix
     [13:00:27] <WrongBot> Zoffix, you are doing it wrong: http://www.doingitwrong.com/wrong/20070527-113353.jpg
     [13:00:41] <Zoffix> WrongBot, doing it wrong
     [13:00:42] <WrongBot> You are doing it wrong: http://www.doingitwrong.com/wrong/1487_kolo.jpg
